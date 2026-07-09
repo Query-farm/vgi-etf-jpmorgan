@@ -69,6 +69,30 @@ ATTACH 'jpmorgan' AS jpmorgan (TYPE vgi, LOCATION '/path/to/vgi-etf-jpmorgan/bin
 
 `bin/vgi-etf-jpmorgan-worker` is a small wrapper that launches `src/worker.ts` under Bun.
 
+### Option C — container image (ghcr.io)
+
+A multi-arch (linux/amd64 + linux/arm64), cosign-signed image is published to
+`ghcr.io/query-farm/vgi-etf-jpmorgan` on every release — no local Bun or worker binary needed.
+Attach it directly over the VGI container transport:
+
+```sql
+LOAD vgi;
+ATTACH 'jpmorgan' AS jpmorgan (TYPE vgi, LOCATION 'oci://ghcr.io/query-farm/vgi-etf-jpmorgan:latest');
+```
+
+Or run the HTTP transport yourself and attach that:
+
+```bash
+docker run --rm -p 8000:8000 ghcr.io/query-farm/vgi-etf-jpmorgan:latest   # serves /health + the VGI RPC on :8000
+```
+
+```sql
+LOAD vgi;
+ATTACH 'jpmorgan' AS jpmorgan (TYPE vgi, LOCATION 'http://localhost:8000');
+```
+
+`:latest` always tracks the newest release.
+
 ## Usage
 
 ### products — the ETF catalog (a base table)
