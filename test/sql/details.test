@@ -1,0 +1,47 @@
+# name: test/sql/details.test
+# description: jpmorgan fund_details — schema + live invariants.
+# group: [sql]
+
+require-env VGI_TEST_WORKER
+
+statement ok
+ATTACH 'jpmorgan' AS jpm (TYPE vgi, LOCATION '${VGI_TEST_WORKER}');
+
+statement ok
+SET search_path='jpm.main';
+
+# --- Schema (bind-only, deterministic). ---
+
+query T
+SELECT column_type FROM (DESCRIBE SELECT * FROM jpm.fund_details('JEPI')) WHERE column_name = 'expense_ratio_percent';
+----
+DOUBLE
+
+query T
+SELECT column_type FROM (DESCRIBE SELECT * FROM jpm.fund_details('JEPI')) WHERE column_name = 'inception_date';
+----
+DATE
+
+query T
+SELECT column_type FROM (DESCRIBE SELECT * FROM jpm.fund_details('JEPI')) WHERE column_name = 'num_holdings';
+----
+BIGINT
+
+# --- Live invariants (hit J.P. Morgan). ---
+
+# fund_details is a single-row snapshot naming the primary benchmark, with a non-negative expense.
+query I
+SELECT (count(*) = 1 AND max(primary_benchmark) IS NOT NULL AND max(expense_ratio_percent) >= 0)::INT FROM jpm.fund_details('JEPI');
+----
+1
+
+# The expense ratio (not in the products bulk feed) is present and small.
+query I
+SELECT (max(expense_ratio_percent) > 0 AND max(expense_ratio_percent) < 5)::INT FROM jpm.fund_details('JEPI');
+----
+1
+
+# An unresolvable ticker raises a typed argument error.
+statement error
+SELECT * FROM jpm.fund_details('ZZZZ');
+----
