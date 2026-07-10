@@ -51,8 +51,9 @@ SELECT (count(*) >= 1)::INT FROM (SELECT * FROM jpm.holdings LIMIT 5);
 ----
 1
 
-# The backing scan function also works directly (pushdown).
+# The backing scan function also works directly (pushdown). It is listed under the same name as the
+# `holdings` table it backs, so it is called with parens: holdings().
 query I
-SELECT (count(*) > 50)::INT FROM jpm.holdings_scan() WHERE fund_ticker = 'JEPI';
+SELECT (count(*) > 50)::INT FROM jpm.holdings() WHERE fund_ticker = 'JEPI';
 ----
 1

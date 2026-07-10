@@ -3,30 +3,26 @@
 // This mirrors what the SDK's `createVgiFetch` does internally (build the VGI protocol from the
 // registry + catalog, seal state in signed tokens), but mounts everything at the ROOT prefix ("")
 // and enables the landing page via `landingDescribe`. So:
-//   GET  /                                   → the shared vendored VGI landing.html
-//   GET  /describe.json                      → the worker's catalog introspection
+//   GET  /                                     → the shared vendored VGI landing.html
+//   GET  /describe.json                        → the worker's catalog introspection
 //   GET  /describe/{catalog}/{schema}/{t}.json → lazy per-object columns
-//   GET  /health                             → JSON health endpoint
-//   POST /                                   → the VGI RPC transport (what DuckDB attaches to)
+//   GET  /health                               → JSON health endpoint
+//   POST /                                     → the VGI RPC transport (what DuckDB attaches to)
 //
 // Run it:  PORT=8787 bun run scripts/serve.ts   (default port 8787)
 // Attach:  ATTACH 'jpmorgan' AS jpmorgan (TYPE vgi, LOCATION 'http://localhost:8787');
+//
+// What this worker serves — the registry and catalog — is defined ONCE in src/parts.ts and shared
+// with the stdio entrypoint (src/worker.ts), so adding a function can never leave the two transports
+// serving divergent catalogs. Everything below is just the HTTP plumbing around those shared parts.
 
 import {
-  FunctionRegistry,
-  ReadOnlyCatalogInterface,
   buildVgiProtocol,
   createLandingDescribe,
   arrowStateSerializer,
 } from "@query-farm/vgi";
 import { createHttpHandler, unpackStateToken } from "@query-farm/vgi-rpc";
-import { makeJpmorganGet } from "../src/client.js";
-import {
-  makeProductsScan,
-  makeHoldingsScan,
-  makeFundDetailsFunction,
-} from "../src/functions.js";
-import { makeCatalog } from "../src/catalog.js";
+import { makeWorkerParts } from "../src/parts.js";
 
 const PORT = Number(process.env.PORT ?? 8787);
 const TOKEN_TTL = 3600;
@@ -38,21 +34,7 @@ const SIGNING_KEY = process.env.VGI_SIGNING_KEY
 
 const REPO = "https://github.com/Query-farm/vgi-etf-jpmorgan";
 
-const get = makeJpmorganGet();
-const functions = [makeFundDetailsFunction(get)];
-// products is a base table backed by an (unlisted) zero-arg scan; holdings is a base table backed
-// by a LISTED scan (holdings_scan) so the extension can push the ticker filter into it.
-const productsScan = makeProductsScan(get);
-const holdingsScan = makeHoldingsScan(get);
-
-const registry = new FunctionRegistry();
-for (const fn of functions) registry.register(fn);
-registry.register(productsScan);
-registry.register(holdingsScan);
-const catalogInterface = new ReadOnlyCatalogInterface(
-  makeCatalog(functions, productsScan, holdingsScan),
-  registry,
-);
+const { registry, catalogInterface } = makeWorkerParts();
 
 const protocol = buildVgiProtocol({
   signingKey: SIGNING_KEY,

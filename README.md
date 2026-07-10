@@ -166,8 +166,10 @@ column (each row's own constituent ticker). J.P. Morgan reports a single effecti
 `sec_type`, `sector`, `industry`, `country`, `currency`, plus the fixed-income-leaning
 `coupon_percent`, `maturity_date` (DATE), `rating`, and `yield_percent`.
 
-> A backing `holdings_scan()` function is also exposed (it's what the table scans, and it's what
-> lets DuckDB push the `fund_ticker` filter) — prefer the `holdings` table.
+> A backing `holdings()` scan function is also exposed under the same qualified name as the
+> `holdings` table it backs (a table function and a table can share a name — the function is called
+> with parens). It's what the table scans, and it's what lets DuckDB push the `fund_ticker` filter —
+> prefer the `holdings` table.
 
 ### fund_details — one-row characteristics snapshot
 

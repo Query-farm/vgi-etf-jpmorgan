@@ -81,9 +81,10 @@ test("the function and the products/holdings tables are exposed over HTTP", asyn
     const client = new VgiClient(rpc);
     const attach = await client.catalogAttach("jpmorgan");
     const fns = await client.schemaContentsFunctions(attach.attach_opaque_data, "main", "TABLE_FUNCTION");
-    // holdings_scan is listed (required so the extension pushes the ticker filter into the holdings
-    // table); products' backing scan stays unlisted.
-    expect(fns.map((f) => f.name).sort()).toEqual(["fund_details", "holdings_scan"]);
+    // The holdings backing scan is listed under the SAME name as the `holdings` table it backs
+    // (required so the extension pushes the ticker filter into the table); products' backing scan
+    // stays unlisted.
+    expect(fns.map((f) => f.name).sort()).toEqual(["fund_details", "holdings"]);
     // products and holdings are base TABLES.
     const tables = await client.schemaContentsTables(attach.attach_opaque_data, "main");
     expect(tables.map((t) => t.name).sort()).toEqual(["holdings", "products"]);

@@ -202,9 +202,9 @@ const CATALOG_TAGS: Record<string, string> = {
     },
     {
       name: "jepi_holdings_scan",
-      prompt: "Using the holdings backing scan, list a few JEPI constituents by weight.",
-      check_sql: "SELECT count(*) > 0 FROM jpmorgan.main.holdings_scan() WHERE fund_ticker = 'JEPI'",
-      success_criteria: "The answer returns JEPI constituents via holdings_scan() filtered by ticker.",
+      prompt: "Using the holdings() backing scan function, list a few JEPI constituents by weight.",
+      check_sql: "SELECT count(*) > 0 FROM jpmorgan.main.holdings() WHERE fund_ticker = 'JEPI'",
+      success_criteria: "The answer returns JEPI constituents via the holdings() backing scan function filtered by ticker.",
     },
     {
       name: "jepi_expense_ratio",
@@ -304,6 +304,11 @@ export function makeCatalog(
             arguments: new Arguments([], new Map()),
             // fund_ticker is always populated (the scan tags every row with its fund).
             notNull: ["fund_ticker"],
+            // Row identity within the current snapshot: a fund (fund_ticker) holds each security
+            // (cusip) once — J.P. Morgan publishes aggregated positions. Advisory only (like
+            // products' key): not enforced on a read-only scan, and cusip is null for the occasional
+            // non-CUSIP line (cash / FX), so treat it as the intended identity, not a guarantee.
+            primaryKey: [["fund_ticker", "cusip"]],
             // Hive partition key: fund_ticker. A WHERE fund_ticker = … / IN (…) filter is pushed
             // down to fetch just those funds; an unfiltered scan streams every fund (all
             // partitions). J.P. Morgan holdings are current-only — NO time travel.

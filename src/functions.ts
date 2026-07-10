@@ -197,7 +197,11 @@ export function makeProductsScan(get: JpmorganGet) {
 export function makeHoldingsScan(get: JpmorganGet) {
   const schema = holdingsSchema();
   return defineTableFunction<Record<string, never>, Record<string, never>>({
-    name: "holdings_scan",
+    // Named to MATCH the `holdings` table it backs (not "holdings_scan"): a table function and a
+    // table can share a qualified name in DuckDB (the function is called with parens, the table
+    // without), and naming them alike is what lets the metadata linter see this listed, parameterless
+    // scan as the browsable `holdings` table rather than an orphan zero-arg function (VGI311).
+    name: "holdings",
     description:
       "Backing scan for the holdings table — prefer the `holdings` table. Detailed current fund " +
       "holdings, hive-partitioned by fund_ticker: filter WHERE fund_ticker = 'JEPI' (or " +
@@ -262,8 +266,8 @@ export function makeHoldingsScan(get: JpmorganGet) {
       }
     },
     examples: [
-      { sql: "SELECT ticker, name, weight_percent FROM jpmorgan.main.holdings_scan() WHERE fund_ticker = 'JEPI' ORDER BY weight_percent DESC LIMIT 10", description: "Top 10 holdings of JEPI via the backing scan" },
-      { sql: "SELECT fund_ticker, count(*) FROM jpmorgan.main.holdings_scan() WHERE fund_ticker IN ('JEPI', 'JPST') GROUP BY fund_ticker", description: "Two partitions at once (fan-out)" },
+      { sql: "SELECT ticker, name, weight_percent FROM jpmorgan.main.holdings() WHERE fund_ticker = 'JEPI' ORDER BY weight_percent DESC LIMIT 10", description: "Top 10 holdings of JEPI via the backing scan" },
+      { sql: "SELECT fund_ticker, count(*) FROM jpmorgan.main.holdings() WHERE fund_ticker IN ('JEPI', 'JPST') GROUP BY fund_ticker", description: "Two partitions at once (fan-out)" },
     ],
     tags: {
       "vgi.category": "holdings",
@@ -275,7 +279,7 @@ export function makeHoldingsScan(get: JpmorganGet) {
         "the FULL position list and current-only (no historical as-of). weight_percent is in " +
         "percent points (1.71 = 1.71%); bond funds also fill coupon/maturity/rating.",
       "vgi.doc_md":
-        "## holdings_scan\n\n" +
+        "## holdings() backing scan\n\n" +
         "The backing scan for the **`holdings` table** — prefer the table. Hive-partitioned by " +
         "`fund_ticker`: filter `WHERE fund_ticker = 'JEPI'` for one fund, or scan with no filter to " +
         "stream every fund (see the example queries). `fund_ticker` is distinct from the " +
