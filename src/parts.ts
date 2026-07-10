@@ -7,7 +7,7 @@
 
 import { FunctionRegistry, ReadOnlyCatalogInterface } from "@query-farm/vgi";
 import { makeJpmorganGet } from "./client.js";
-import {  makeProductsScan, makeHoldingsScan, makeFundDetailsFunction  } from "./functions.js";
+import { makeProductsScan, makeHoldingsScan, makeFundDetailsFunction } from "./functions.js";
 import { makeCatalog } from "./catalog.js";
 
 export function makeWorkerParts() {

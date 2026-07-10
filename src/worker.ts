@@ -10,4 +10,5 @@ import { makeWorkerParts } from "./parts.js";
 
 const { servedFunctions, catalogInterface } = makeWorkerParts();
 
+// `functions` for the Worker is the full set the registry serves (incl. the table scans).
 new Worker({ functions: servedFunctions, catalogInterface }).run();
