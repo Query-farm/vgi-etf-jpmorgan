@@ -254,6 +254,7 @@ const SCHEMA_TAGS: Record<string, string> = {
     { description: "Largest J.P. Morgan ETFs by assets", sql: "SELECT ticker, name, net_assets FROM jpmorgan.main.products ORDER BY net_assets DESC LIMIT 10" },
     { description: "Top holdings of JEPI", sql: "SELECT ticker, name, weight_percent FROM jpmorgan.main.holdings WHERE fund_ticker = 'JEPI' ORDER BY weight_percent DESC LIMIT 10" },
     { description: "Full characteristics for JEPI", sql: "SELECT ticker, primary_benchmark, expense_ratio_percent, sec_yield_percent FROM jpmorgan.main.fund_details('JEPI')" },
+    { description: "Screen the catalog, then drill into a fund's holdings (join on fund_ticker = products.ticker)", sql: "SELECT p.ticker, p.name, p.net_assets, h.ticker AS holding, h.weight_percent FROM jpmorgan.main.products p JOIN jpmorgan.main.holdings h ON h.fund_ticker = p.ticker WHERE p.ticker = 'JEPI' ORDER BY h.weight_percent DESC LIMIT 10" },
   ]),
 };
 

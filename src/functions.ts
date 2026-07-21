@@ -285,6 +285,14 @@ export function makeHoldingsScan(get: JpmorganGet) {
         "stream every fund (see the example queries). `fund_ticker` is distinct from the " +
         "constituent `ticker` column. Holdings are the full position list and current-only (no " +
         "historical as-of).",
+      // Carry the same examples through the description-preserving example_queries tag: the VGI
+      // extension re-surfaces Meta.examples into duckdb_functions().examples as a bare SQL VARCHAR[]
+      // (descriptions dropped), so without this the descriptions are invisible to vgi-lint (VGI515).
+      // Byte-identical SQL to the `examples:` above; the linter dedups by normalized SQL.
+      "vgi.example_queries": JSON.stringify([
+        { description: "Top 10 holdings of JEPI via the backing scan", sql: "SELECT ticker, name, weight_percent FROM jpmorgan.main.holdings() WHERE fund_ticker = 'JEPI' ORDER BY weight_percent DESC LIMIT 10" },
+        { description: "Two partitions at once (fan-out)", sql: "SELECT fund_ticker, count(*) FROM jpmorgan.main.holdings() WHERE fund_ticker IN ('JEPI', 'JPST') GROUP BY fund_ticker" },
+      ]),
       "vgi.result_columns_schema": resultColumnsSchema(holdingsSchema(), HOLDINGS_SCAN_DESCS),
     },
   });
@@ -345,6 +353,15 @@ export function makeFundDetailsFunction(get: JpmorganGet) {
         "(net & gross expense ratios, holdings count, primary benchmark, objective and strategy " +
         "prose). Percent columns are in percent points.\n\n" +
         "It returns exactly one row; for the whole lineup use `products` (see the example queries).",
+      // Carry the same examples through the description-preserving example_queries tag: the VGI
+      // extension re-surfaces Meta.examples into duckdb_functions().examples as a bare SQL VARCHAR[]
+      // (descriptions dropped), so without this the descriptions are invisible to vgi-lint (VGI515).
+      // Byte-identical SQL to the `examples:` above; the linter dedups by normalized SQL.
+      "vgi.example_queries": JSON.stringify([
+        { description: "Key characteristics for JEPI", sql: "SELECT ticker, primary_benchmark, expense_ratio_percent, sec_yield_percent FROM jpmorgan.main.fund_details('JEPI')" },
+        { description: "Size, holdings count, and Morningstar rating", sql: "SELECT ticker, net_assets, num_holdings, morningstar_rating FROM jpmorgan.main.fund_details('JEPI')" },
+        { description: "1-year and since-inception NAV returns", sql: "SELECT return_1y_percent, return_since_inception_percent FROM jpmorgan.main.fund_details('JEPI')" },
+      ]),
       "vgi.result_columns_schema": resultColumnsSchema(fundDetailsSchema(), FUND_DETAILS_DESCS),
     },
   });
