@@ -1,0 +1,38 @@
+# Private grader sidecar for `vgi-lint simulate` (and `lint`'s VGI520 coverage). The worker
+# publishes only task names + prompts in `vgi.agent_test_tasks` (src/catalog.ts); these
+# grader fields are keyed by that name and never sent to the analyst agent.
+#
+# Each task carries a deterministic check_sql that asserts specific ground truth;
+# reference_sql is omitted (live data + free-form analyst queries won't reproduce an exact
+# result set). success_criteria records what a correct answer looks like.
+tasks:
+  - name: jepi_exists
+    check_sql: >-
+      SELECT count(*) > 0 FROM jpmorgan.main.products WHERE ticker = 'JEPI'
+    success_criteria: >-
+      The answer confirms JEPI is the JPMorgan Equity Premium Income ETF, found via the products table.
+  - name: jepi_top_holding
+    check_sql: >-
+      SELECT count(*) > 0 FROM jpmorgan.main.holdings WHERE fund_ticker = 'JEPI'
+    success_criteria: >-
+      The answer names JEPI's top holding by weight, obtained from the holdings table.
+  - name: jepi_holdings_scan
+    check_sql: >-
+      SELECT count(*) > 0 FROM jpmorgan.main.holdings() WHERE fund_ticker = 'JEPI'
+    success_criteria: >-
+      The answer returns JEPI constituents via the holdings() backing scan function filtered by ticker.
+  - name: jepi_expense_ratio
+    check_sql: >-
+      SELECT count(*) > 0 FROM jpmorgan.main.fund_details('JEPI') WHERE expense_ratio_percent IS NOT NULL
+    success_criteria: >-
+      The answer reports JEPI's net expense ratio (a small percentage) from the fund_details function.
+  - name: jepi_benchmark
+    check_sql: >-
+      SELECT count(*) > 0 FROM jpmorgan.main.fund_details('JEPI') WHERE primary_benchmark IS NOT NULL
+    success_criteria: >-
+      The answer names JEPI's primary benchmark (the S&P 500 Index) from the fund_details function.
+  - name: largest_fund
+    check_sql: >-
+      SELECT count(*) > 0 FROM jpmorgan.main.products WHERE net_assets IS NOT NULL
+    success_criteria: >-
+      The answer names the largest J.P. Morgan ETF by net_assets, obtained by ordering the products table.

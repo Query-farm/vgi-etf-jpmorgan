@@ -143,7 +143,7 @@ run` uses Bun's shell, which mishandles the `grep -v node_modules` filter. Pin `
 - vgi-lint rules that must stay satisfied: catalog/schema descriptions must NOT enumerate the
   worker's own functions (VGI173 — describe purpose/concepts); argument docs must NOT restate the
   data type (VGI313 — the `fund` doc says "portfolio ticker or CUSIP", never "numeric"); every
-  function needs an agent test task (VGI520 — all covered in `catalog.ts` `vgi.agent_test_tasks`).
+  function needs an agent test task (VGI520 — all covered in `catalog.ts` `vgi.agent_test_tasks`; their graders live in `vgi-agent-tests.yaml`, VGI416).
 - Don't add a secret type; this worker is keyless by design.
 - Don't add `distributions` / `nav_history`; the data plane doesn't carry those series.
 

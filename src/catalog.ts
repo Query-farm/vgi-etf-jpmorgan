@@ -184,45 +184,33 @@ const CATALOG_TAGS: Record<string, string> = {
       sql: "SELECT ticker, name, weight_percent FROM jpmorgan.main.holdings WHERE fund_ticker = 'JEPI' ORDER BY weight_percent DESC LIMIT 5",
     },
   ]),
-  // Agent-suitability suite (catalog only). Each task carries a deterministic check_sql that
-  // asserts specific ground truth; reference_sql is omitted (live data + free-form analyst queries
-  // won't reproduce an exact result set). success_criteria records what a correct answer looks like.
+  // Agent-suitability suite (catalog only). Only each task's name + prompt is published
+  // here (VGI416); the grader fields live in the private sidecar vgi-agent-tests.yaml,
+  // keyed by task name, and are never shown to the analyst.
   "vgi.agent_test_tasks": JSON.stringify([
     {
       name: "jepi_exists",
       prompt: "Does J.P. Morgan offer an ETF with the ticker JEPI, and what is it called?",
-      check_sql: "SELECT count(*) > 0 FROM jpmorgan.main.products WHERE ticker = 'JEPI'",
-      success_criteria: "The answer confirms JEPI is the JPMorgan Equity Premium Income ETF, found via the products table.",
     },
     {
       name: "jepi_top_holding",
       prompt: "What is the single largest holding of the JPMorgan Equity Premium Income ETF (JEPI) right now?",
-      check_sql: "SELECT count(*) > 0 FROM jpmorgan.main.holdings WHERE fund_ticker = 'JEPI'",
-      success_criteria: "The answer names JEPI's top holding by weight, obtained from the holdings table.",
     },
     {
       name: "jepi_holdings_scan",
       prompt: "Using the holdings() backing scan function, list a few JEPI constituents by weight.",
-      check_sql: "SELECT count(*) > 0 FROM jpmorgan.main.holdings() WHERE fund_ticker = 'JEPI'",
-      success_criteria: "The answer returns JEPI constituents via the holdings() backing scan function filtered by ticker.",
     },
     {
       name: "jepi_expense_ratio",
       prompt: "What is the expense ratio of the JPMorgan Equity Premium Income ETF (JEPI)?",
-      check_sql: "SELECT count(*) > 0 FROM jpmorgan.main.fund_details('JEPI') WHERE expense_ratio_percent IS NOT NULL",
-      success_criteria: "The answer reports JEPI's net expense ratio (a small percentage) from the fund_details function.",
     },
     {
       name: "jepi_benchmark",
       prompt: "Which benchmark does the JPMorgan Equity Premium Income ETF (JEPI) track?",
-      check_sql: "SELECT count(*) > 0 FROM jpmorgan.main.fund_details('JEPI') WHERE primary_benchmark IS NOT NULL",
-      success_criteria: "The answer names JEPI's primary benchmark (the S&P 500 Index) from the fund_details function.",
     },
     {
       name: "largest_fund",
       prompt: "Which J.P. Morgan ETF has the most assets under management?",
-      check_sql: "SELECT count(*) > 0 FROM jpmorgan.main.products WHERE net_assets IS NOT NULL",
-      success_criteria: "The answer names the largest J.P. Morgan ETF by net_assets, obtained by ordering the products table.",
     },
   ]),
 };
