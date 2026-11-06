@@ -44,6 +44,7 @@ export type JpmorganGet = (url: string) => Promise<unknown>;
 
 const HOLDINGS_SCAN_DESCS: Record<string, string> = {
   fund_ticker: "The fund's ticker — the partition filter (e.g. JEPI).",
+  holding_rank: "1-based position within the fund, ordered by descending weight (largest holding = 1). With fund_ticker, the row's primary key.",
   as_of_date: "The effective date J.P. Morgan reports for these holdings.",
   name: "Constituent / security description.",
   ticker: "Constituent ticker (the holding's own ticker; distinct from fund_ticker).",

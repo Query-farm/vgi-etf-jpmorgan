@@ -75,9 +75,9 @@ scan streams every fund** (one partition per fund). Mechanics (copied from vgi-e
 - **`fund_ticker` is a SEPARATE column from `ticker`** — `ticker` is the CONSTITUENT's own ticker.
   The scan tags every row of a fund with `fundTicker` (the requested fund ticker, upper-cased).
 - The CUSIP is used internally (resolveFund / product-data URL) and also surfaces as `products.cusip`
-  and `holdings.cusip` (the constituent's). Constraints: `products` advisory PK `[cusip]`, `holdings`
-  advisory composite PK `[fund_ticker, cusip]` (per-fund security identity; clears VGI807) plus
-  `notNull [fund_ticker]`. No cross-table FK (ticker/cusip recur with different meanings). No rule is
+  and `holdings.cusip` (the constituent's). Constraints (vgi.v3 serves them as ENFORCED canonical records (`constraintRecord`), so each must hold for every scanned row): `products` PK `[ticker]` (the scan
+  drops ticker-less/repeated entries), `holdings` PK `[fund_ticker, holding_rank]` (1-based per-fund
+  ordinal; cusip is null on cash/FX lines so it can't key) plus NOT NULL `fund_ticker` (VGI804). No cross-table FK (ticker/cusip recur with different meanings). No rule is
   suppressed — `vgi-lint.toml` has no `ignore` list (VGI311 cleared by the `holdings()`-named scan).
 
 ## Architecture (keep this separation — identical to vgi-etf-invesco)

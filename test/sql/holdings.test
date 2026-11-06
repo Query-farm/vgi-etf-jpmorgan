@@ -15,7 +15,7 @@ SET search_path='jpm.main';
 query T
 SELECT string_agg(column_name, ',') FROM (DESCRIBE SELECT * FROM jpm.holdings WHERE fund_ticker = 'JEPI');
 ----
-fund_ticker,as_of_date,name,ticker,cusip,weight_percent,market_value,shares,sec_type,sector,industry,country,currency,coupon_percent,maturity_date,rating,yield_percent
+fund_ticker,holding_rank,as_of_date,name,ticker,cusip,weight_percent,market_value,shares,sec_type,sector,industry,country,currency,coupon_percent,maturity_date,rating,yield_percent
 
 query T
 SELECT column_type FROM (DESCRIBE SELECT * FROM jpm.holdings WHERE fund_ticker = 'JEPI') WHERE column_name = 'as_of_date';

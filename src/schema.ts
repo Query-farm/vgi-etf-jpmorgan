@@ -120,6 +120,10 @@ export function holdingsSchema(): Schema {
   return new Schema([
     // fund_ticker is the hive partition key: the holdings scan emits one SINGLE_VALUE partition per fund.
     partitionField("fund_ticker", new Utf8()),
+    // holding_rank is the 1-based position of the row within its fund (in the published order,
+    // weight-descending). (fund_ticker, holding_rank) is the table's primary key: no constituent
+    // identifier is unique and always present.
+    f("holding_rank", new Int64()),
     f("as_of_date", date()),
     f("name", new Utf8()),
     f("ticker", new Utf8()),
@@ -143,6 +147,9 @@ export function holdingsBatch(schema: Schema, rows: HoldingRow[]) {
   return batchFromColumns(
     {
       fund_ticker: rows.map((r) => r.fundTicker),
+      // Per-fund ordinal (1-based). Each partition batch carries exactly one fund's rows, so this
+      // is a stable per-fund row identity — the second half of the (fund_ticker, holding_rank) key.
+      holding_rank: rows.map((_, i) => BigInt(i + 1)),
       as_of_date: rows.map((r) => dateOrNull(r.asOfDate)),
       name: rows.map((r) => r.name),
       ticker: rows.map((r) => r.ticker),

@@ -228,10 +228,15 @@ export function parseProducts(json: unknown, ticker = ""): ProductRow[] {
   const arr = Array.isArray(json) ? json : [];
   const wantTicker = ticker.trim().toUpperCase();
   const rows: ProductRow[] = [];
+  const seen = new Set<string>();
   for (const doc of arr) {
     const row = parseProductDoc(doc);
     if (!row || !row.ticker) continue;
     if (wantTicker && row.ticker !== wantTicker) continue;
+    // ticker is the products table's PRIMARY KEY (served as an engine fact): keep the first
+    // entry for a ticker and drop any repeat.
+    if (seen.has(row.ticker.toUpperCase())) continue;
+    seen.add(row.ticker.toUpperCase());
     rows.push(row);
   }
   return rows;

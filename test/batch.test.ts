@@ -29,7 +29,7 @@ test("products schema field names + order", () => {
 
 test("holdings schema field names + order", () => {
   expect(names(holdingsSchema())).toEqual([
-    "fund_ticker", "as_of_date", "name", "ticker", "cusip", "weight_percent", "market_value",
+    "fund_ticker", "holding_rank", "as_of_date", "name", "ticker", "cusip", "weight_percent", "market_value",
     "shares", "sec_type", "sector", "industry", "country", "currency", "coupon_percent",
     "maturity_date", "rating", "yield_percent",
   ]);
