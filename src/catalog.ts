@@ -156,6 +156,8 @@ const HOLDINGS_TABLE_TAGS: Record<string, string> = {
 /** Catalog-level tags: docs, discovery, provenance, and the agent-test suite. */
 const CATALOG_TAGS: Record<string, string> = {
   "vgi.title": "J.P. Morgan ETFs",
+  "vgi.subtitle":
+    "Screen the JPMorgan US ETF lineup, inspect current fund holdings, and pull fund characteristics.",
   "vgi.doc_llm":
     "J.P. Morgan Asset Management US ETF data as SQL tables and a table function. Reach for it to " +
     "screen the ETF lineup on key facts (NAV, assets, yield, returns, asset class), to inspect " +
