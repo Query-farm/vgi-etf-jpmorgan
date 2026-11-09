@@ -22,7 +22,7 @@ const { registry, catalogInterface } = makeWorkerParts();
 serveVgiWorker({
   name: "jpmorgan",
   doc: "J.P. Morgan US ETF data: product catalog, current holdings, and per-fund characteristics.",
-  version: "0.2.0",
+  version: "0.3.0",
   repositoryUrl: "https://github.com/Query-farm/vgi-etf-jpmorgan",
   serverId: "vgi-etf-jpmorgan",
   registry,
