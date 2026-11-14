@@ -249,3 +249,7 @@ endorsed by JPMorgan Chase & Co. or its affiliates.
 ## License
 
 MIT — Copyright 2026 Query Farm LLC · https://query.farm
+
+## Executed notebook
+
+[Inspect a reported maturity window](notebooks/README.md) with live JPST holdings, missing-date coverage, and a portable published worker.
