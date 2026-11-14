@@ -93,6 +93,38 @@ const PRODUCTS_TABLE_TAGS: Record<string, string> = {
   "vgi.result_columns_schema": resultColumnsSchema(productsSchema(), PRODUCTS_COLUMN_COMMENTS),
 };
 
+// Composed examples: each joins the catalog to the holdings table (or holdings to itself) the way
+// a real screen would. Defined once and referenced from both the holdings table's list (within its
+// first five, which is what agents are shown) and the schema-level list.
+const EX_FUNDS_HOLDING_AAPL = {
+  description:
+    "Which J.P. Morgan U.S. equity ETFs hold Apple, largest weight first (catalog joined to holdings on fund_ticker)",
+  sql:
+    "SELECT p.ticker AS fund_ticker, p.name AS fund_name, h.weight_percent, h.market_value " +
+    "FROM jpmorgan.main.products p JOIN jpmorgan.main.holdings h ON h.fund_ticker = p.ticker " +
+    "WHERE p.asset_class = 'U.S. Equity' AND h.ticker = 'AAPL' ORDER BY h.weight_percent DESC, p.ticker",
+};
+const EX_JEPI_JEPQ_OVERLAP = {
+  description:
+    "Largest positions JEPI and JEPQ both hold (holdings joined to itself on CUSIP), ranked by the smaller of the two weights",
+  sql:
+    "SELECT a.ticker, a.name, a.weight_percent AS jepi_weight_percent, b.weight_percent AS jepq_weight_percent " +
+    "FROM jpmorgan.main.holdings a JOIN jpmorgan.main.holdings b ON a.cusip = b.cusip " +
+    "WHERE a.fund_ticker = 'JEPI' AND b.fund_ticker = 'JEPQ' " +
+    "ORDER BY least(a.weight_percent, b.weight_percent) DESC, a.ticker LIMIT 10",
+};
+const EX_ACTIVE_EQUITY_CONCENTRATION = {
+  description:
+    "How concentrated each active U.S. equity ETF is: combined weight of its 10 largest positions, its position count, and its assets",
+  sql:
+    "SELECT p.ticker, p.name, p.net_assets, " +
+    "round(sum(h.weight_percent) FILTER (WHERE h.holding_rank <= 10), 2) AS top10_weight_percent, " +
+    "count(*) AS positions " +
+    "FROM jpmorgan.main.products p JOIN jpmorgan.main.holdings h ON h.fund_ticker = p.ticker " +
+    "WHERE p.asset_class = 'U.S. Equity' AND p.management_style = 'Active' " +
+    "GROUP BY p.ticker, p.name, p.net_assets ORDER BY top10_weight_percent DESC, p.ticker",
+};
+
 /** Per-column comments for the holdings table. */
 const HOLDINGS_COLUMN_COMMENTS: Record<string, string> = {
   fund_ticker: "The fund's ticker (e.g. JEPI) — the hive partition key; constant for every row of a fund. Filter on it to pick funds; omit to stream all.",
@@ -148,6 +180,9 @@ const HOLDINGS_TABLE_TAGS: Record<string, string> = {
   "vgi.result_columns_schema": resultColumnsSchema(holdingsSchema(), HOLDINGS_COLUMN_COMMENTS),
   "vgi.example_queries": JSON.stringify([
     { description: "Top 10 current holdings of JEPI", sql: "SELECT ticker, name, weight_percent FROM jpmorgan.main.holdings WHERE fund_ticker = 'JEPI' ORDER BY weight_percent DESC LIMIT 10" },
+    EX_FUNDS_HOLDING_AAPL,
+    EX_JEPI_JEPQ_OVERLAP,
+    EX_ACTIVE_EQUITY_CONCENTRATION,
     { description: "Two funds at once (partition fan-out)", sql: "SELECT fund_ticker, ticker, weight_percent FROM jpmorgan.main.holdings WHERE fund_ticker IN ('JEPI', 'JPST')" },
     { description: "A bond fund also fills coupon / maturity", sql: "SELECT name, coupon_percent, maturity_date, weight_percent FROM jpmorgan.main.holdings WHERE fund_ticker = 'JPST' LIMIT 5" },
   ]),
@@ -233,6 +268,21 @@ const CATALOG_TAGS: Record<string, string> = {
       name: "largest_fund",
       prompt: "Which J.P. Morgan ETF has the most assets under management?",
     },
+    {
+      name: "nvda_active_equity_holders",
+      prompt:
+        "How many of J.P. Morgan's actively managed U.S. equity ETFs (asset class 'U.S. Equity', " +
+        "management style 'Active') currently hold NVIDIA (constituent ticker NVDA) with a positive " +
+        "weight? Save your answer as a temp table nvda_active_holders with exactly one row and one " +
+        "BIGINT column named funds.",
+    },
+    {
+      name: "jepq_weight_shared_with_jepi",
+      prompt:
+        "What percent of JEPQ's portfolio weight sits in securities that JEPI also holds (match " +
+        "positions by CUSIP)? Save your answer as a temp table jepq_shared_weight with exactly one " +
+        "row and one DOUBLE column named weight_percent, in percent points (e.g. 42.5).",
+    },
   ]),
 };
 
@@ -264,6 +314,9 @@ const SCHEMA_TAGS: Record<string, string> = {
     { description: "Top holdings of JEPI", sql: "SELECT ticker, name, weight_percent FROM jpmorgan.main.holdings WHERE fund_ticker = 'JEPI' ORDER BY weight_percent DESC LIMIT 10" },
     { description: "Full characteristics for JEPI", sql: "SELECT ticker, primary_benchmark, expense_ratio_percent, sec_yield_percent FROM jpmorgan.main.fund_details('JEPI')" },
     { description: "Screen the catalog, then drill into a fund's holdings (join on fund_ticker = products.ticker)", sql: "SELECT p.ticker, p.name, p.net_assets, h.ticker AS holding, h.weight_percent FROM jpmorgan.main.products p JOIN jpmorgan.main.holdings h ON h.fund_ticker = p.ticker WHERE p.ticker = 'JEPI' ORDER BY h.weight_percent DESC LIMIT 10" },
+    EX_FUNDS_HOLDING_AAPL,
+    EX_JEPI_JEPQ_OVERLAP,
+    EX_ACTIVE_EQUITY_CONCENTRATION,
   ]),
 };
 

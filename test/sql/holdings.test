@@ -57,3 +57,19 @@ query I
 SELECT (count(*) > 50)::INT FROM jpm.holdings() WHERE fund_ticker = 'JEPI';
 ----
 1
+
+# Non-partition predicates are pushed into the scan too (filterPushdown hands DuckDB's whole WHERE
+# to the worker and drops it from the plan), so the scan must apply them: a constituent-ticker
+# filter returns only that constituent's rows, not the fund's full list. Regression: before
+# autoApplyFilters this returned every JEPI holding.
+query I
+SELECT (count(*) BETWEEN 1 AND 2 AND bool_and(ticker = 'MSFT'))::INT
+FROM jpm.holdings WHERE fund_ticker = 'JEPI' AND ticker = 'MSFT';
+----
+1
+
+query I
+SELECT (count(*) >= 1 AND bool_and(weight_percent > 1))::INT
+FROM jpm.holdings WHERE fund_ticker = 'JEPI' AND weight_percent > 1;
+----
+1

@@ -212,6 +212,11 @@ export function makeHoldingsScan(get: JpmorganGet) {
     // extension can discover the capability and push the fund_ticker filter into the table scan.
     // Each fund is one SINGLE_VALUE partition (fund_ticker is the hive partition key).
     filterPushdown: true,
+    // With filterPushdown DuckDB hands EVERY pushable WHERE predicate to the scan and drops it from
+    // the plan — not just fund_ticker. onInit only uses fund_ticker to pick partitions, so the
+    // framework must re-apply the full filter set to each emitted batch; without this a
+    // `WHERE fund_ticker = 'JEPQ' AND ticker = 'NVDA'` returned all of JEPQ's holdings.
+    autoApplyFilters: true,
     partitionKind: "SINGLE_VALUE_PARTITIONS",
     maxWorkers: DEFAULT_MAX_WORKERS,
     onBind: () => ({ outputSchema: schema }),

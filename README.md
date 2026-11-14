@@ -165,6 +165,19 @@ column (each row's own constituent ticker). J.P. Morgan reports a single effecti
 `sec_type`, `sector`, `industry`, `country`, `currency`, plus the fixed-income-leaning
 `coupon_percent`, `maturity_date` (DATE), `rating`, and `yield_percent`.
 
+Join `holdings` to `products` to screen funds by what they hold. A join on `fund_ticker` does not
+narrow the holdings scan, so this streams every fund's partition (a few seconds); the constituent
+`ticker` filter is applied in the scan:
+
+```sql
+-- Which J.P. Morgan U.S. equity ETFs hold Apple, largest weight first:
+SELECT p.ticker AS fund_ticker, p.name AS fund_name, h.weight_percent, h.market_value
+FROM jpmorgan.products p
+JOIN jpmorgan.holdings h ON h.fund_ticker = p.ticker
+WHERE p.asset_class = 'U.S. Equity' AND h.ticker = 'AAPL'
+ORDER BY h.weight_percent DESC, p.ticker;
+```
+
 > A backing `holdings()` scan function is also exposed under the same qualified name as the
 > `holdings` table it backs (a table function and a table can share a name — the function is called
 > with parens). It's what the table scans, and it's what lets DuckDB push the `fund_ticker` filter —

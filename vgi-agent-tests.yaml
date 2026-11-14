@@ -36,3 +36,24 @@ tasks:
       SELECT count(*) > 0 FROM jpmorgan.main.products WHERE net_assets IS NOT NULL
     success_criteria: >-
       The answer names the largest J.P. Morgan ETF by net_assets, obtained by ordering the products table.
+  - name: nvda_active_equity_holders
+    check_sql: >-
+      SELECT (SELECT count(*) FROM nvda_active_holders) = 1
+      AND (SELECT max(funds) FROM nvda_active_holders) = (
+        SELECT count(DISTINCT h.fund_ticker) FROM jpmorgan.main.holdings h
+        JOIN jpmorgan.main.products p ON p.ticker = h.fund_ticker
+        WHERE p.asset_class = 'U.S. Equity' AND p.management_style = 'Active'
+          AND h.ticker = 'NVDA' AND h.weight_percent > 0)
+    success_criteria: >-
+      The answer counts the active U.S. equity ETFs (products filtered on asset_class and
+      management_style) whose holdings include NVDA with a positive weight.
+  - name: jepq_weight_shared_with_jepi
+    check_sql: >-
+      SELECT (SELECT count(*) FROM jepq_shared_weight) = 1
+      AND abs((SELECT max(weight_percent) FROM jepq_shared_weight) - (
+        SELECT sum(weight_percent) FROM jpmorgan.main.holdings
+        WHERE fund_ticker = 'JEPQ'
+          AND cusip IN (SELECT cusip FROM jpmorgan.main.holdings WHERE fund_ticker = 'JEPI'))) < 0.05
+    success_criteria: >-
+      The answer sums JEPQ's weight_percent over positions whose CUSIP also appears in JEPI's
+      holdings (about 60 percent points at the time of writing).
