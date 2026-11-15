@@ -200,7 +200,8 @@ const CATALOG_TAGS: Record<string, string> = {
     "is the fund, identified by its exchange ticker (e.g. JEPI); start from the catalog to find " +
     "that key, then drill into a specific fund. Holdings are current-only (no historical as-of), " +
     "and there is no distribution or NAV time series. Data is J.P. Morgan's public product feed: " +
-    "best-effort, for informational use.",
+    "best-effort, for informational use." +
+    " Upstream source: https://am.jpmorgan.com/us/en/asset-management/adv/products/fund-explorer/etf.",
   "vgi.doc_md":
     "## J.P. Morgan ETFs\n\n" +
     "J.P. Morgan Asset Management US ETF data, exposed as DuckDB tables and a table function.\n\n" +
@@ -208,6 +209,10 @@ const CATALOG_TAGS: Record<string, string> = {
     "begin at the catalog to discover that key, then drill into a fund. Fund holdings are " +
     "**current-only**: J.P. Morgan reports a single effective date per fund, so there is no " +
     "historical time travel, and no distribution or NAV time series is published.\n\n" +
+    "### Sources\n\n" +
+    "- [J.P. Morgan ETF fund explorer](https://am.jpmorgan.com/us/en/asset-management/adv/products/fund-explorer/etf) — the US ETF lineup the catalog is read from.\n" +
+    "- [J.P. Morgan Asset Management terms of use](https://am.jpmorgan.com/us/en/asset-management/adv/terms-of-use/) — terms that govern use of the site's data.\n" +
+    "\n" +
     "Data is provided for informational use; review J.P. Morgan's terms before redistribution.",
   "vgi.keywords": JSON.stringify([
     "ETF",
