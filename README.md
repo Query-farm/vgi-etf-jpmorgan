@@ -44,7 +44,7 @@ Every [GitHub release](https://github.com/Query-farm/vgi-etf-jpmorgan/releases) 
 INSTALL vgi FROM community;
 LOAD vgi;
 
-ATTACH 'jpmorgan' AS jpmorgan (TYPE vgi, LOCATION 'github-auto://Query-farm/vgi-etf-jpmorgan@v0.4.2');
+ATTACH 'jpmorgan' AS jpmorgan (TYPE vgi, LOCATION 'github-auto://Query-farm/vgi-etf-jpmorgan@v0.4.3');
 
 -- The largest J.P. Morgan ETFs by assets
 SELECT ticker, name, net_assets FROM jpmorgan.main.products ORDER BY net_assets DESC LIMIT 5;
@@ -53,7 +53,7 @@ SELECT ticker, name, net_assets FROM jpmorgan.main.products ORDER BY net_assets 
 SELECT ticker, name, weight_percent FROM jpmorgan.main.holdings WHERE fund_ticker = 'JEPI' ORDER BY weight_percent DESC LIMIT 5;
 ```
 
-Prebuilt binaries cover macOS (Apple silicon), Linux (x86-64 and arm64). `github-auto://` needs an explicit release tag; change `@v0.4.2` to move to a newer release.
+Prebuilt binaries cover macOS (Apple silicon), Linux (x86-64 and arm64). `github-auto://` needs an explicit release tag; change `@v0.4.3` to move to a newer release.
 
 ### Other ways to run it
 
